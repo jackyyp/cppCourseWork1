@@ -1,7 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <list>
 #include <algorithm>
+#include <sstream>
 
 
 using namespace std;
@@ -18,6 +20,7 @@ void prepare_files(){
         ofs << 29567638 << endl;
         ofs << 29576389 << endl;
     }
+    ofs.close();
 
 }
 
@@ -56,50 +59,31 @@ bool student_lookup(int student_id){
 // The result should not contain blank lines
 // Please check the section "Hint" in the lab page for how to rename a file or remove a file.
 void delete_student(int student_id){
-    ofstream outputFile ("student_list.txt",ios::app);
-    ofstream tempFile ("temp.txt");
-    ifstream inputFile("student_list.txt");
-
-    vector<int> data;
-    int line;
-  
+    ofstream tempFile ("temp.txt"); //write
+    ifstream inputFile("student_list.txt"); //read
+    string line;
+    stringstream ss;
+    ss << student_id;
+    string id = ss.str();
 
     if(student_lookup(student_id)){ //check if id exist
-        while(inputFile>>line){
-            data.push_back(line);
-        }
-      
-        for(vector<int>::iterator i = data.begin(); i != data.end(); i++)
-        {
-            if( *i == student_id)
-                data.erase(i);
-        }
-
-        for(vector<int>::iterator i = data.begin(); i != data.end(); i++)
-        {
-            tempFile << *i << endl;
+        while(getline(inputFile,line)){
+            if(line != id)
+                tempFile << line << endl;
         }
         
-        outputFile.close(); // close f
         inputFile.close();
         tempFile.close();
 
-        if (remove("student_list.txt") == 0)
-            cout << "The file is successfully removed" << endl;
-        else
-            cout << "Error removing file" << endl;
-
-        if (rename("temp.txt","student_list.txt") == 0)
-            cout << "The file is successfully renamed" << endl;
-        else
-            cout << "Error renaming file" << endl;
+        remove("student_list.txt");
+        rename("temp.txt","student_list.txt");
         
         cout <<"Student " << student_id << " is removed from the course!" << endl;
 
     }
 
     else{
-         cerr <<"Student " << student_id << " is not taking the course!" << endl;
+        cout <<"Student " << student_id << " is not taking the course!" << endl;
     }
 
 }
@@ -113,18 +97,17 @@ void insert_student(int student_id){
     ofstream tempFile ("temp.txt");
     ifstream inputFile("student_list.txt");
 
-    vector<int> data;
+    vector<int> parsedData;
     int line;
   
-
     if(!student_lookup(student_id)){ //check if id duplicate
         outputFile << student_id << endl;
         while(inputFile>>line){
-            data.push_back(line);
+            parsedData.push_back(line);
         }
-        sort(data.begin(),data.end());
+        sort(parsedData.begin(),parsedData.end());
 
-        for(vector<int>::iterator i = data.begin(); i != data.end(); i++)
+        for(vector<int>::iterator i = parsedData.begin(); i != parsedData.end(); ++i)
         {
             tempFile << *i << endl;
         }
@@ -133,22 +116,14 @@ void insert_student(int student_id){
         inputFile.close();
         tempFile.close();
 
-        if (remove("student_list.txt") == 0)
-            cout << "The file is successfully removed" << endl;
-        else
-            cout << "Error removing file" << endl;
+        remove("student_list.txt");
+        rename("temp.txt","student_list.txt");
 
-        if (rename("temp.txt","student_list.txt") == 0)
-            cout << "The file is successfully renamed" << endl;
-        else
-            cout << "Error renaming file" << endl;
-        
         cout <<"Student " << student_id << " is inserted successfully!" << endl;
-
     }
 
     else{
-         cerr <<"Student " << student_id << " is already taking the course!" << endl;
+        cout <<"Student " << student_id << " is already taking the course!" << endl;
     }
 
 }
@@ -177,7 +152,7 @@ int main(){
         }else if (choice == '2'){
             cout << "Please enter the id of the student you want to insert: ";
             cin >> student_id;
-            insert_student( student_id);
+            insert_student(student_id);
         }else if (choice == '3'){
             cout << "Please enter the id of the student you want to delete: ";
             cin >> student_id;
