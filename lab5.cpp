@@ -25,26 +25,80 @@ void initialize_canvas(char canvas[HEIGHT][WIDTH]) {
 
 // Task 1: Print the canvas
 void print_canvas(const char canvas[HEIGHT][WIDTH]) {
+        for (int i = 0; i < HEIGHT; i++) {
+            for (int j = 0; j < WIDTH; j++) {
+              cout << canvas[i][j] ;
+            }
+            cout<< '\n';
+        }
 }
 
 
 // Task 2: change the cursor after painting the pixel
 void paint_pixel(char canvas[HEIGHT][WIDTH], int row_position, int col_position) {
+    canvas[row_position][col_position] = 'X';
 }
 
 // Task 3: change the cursor after painting the pixel
 void erase_pixel(char canvas[HEIGHT][WIDTH], int row_position, int col_position) {
+    canvas[row_position][col_position] = '.';
 }
 
 
 // Task 4: check whether the move is valid and move the cursor
 bool move_brush(char canvas[HEIGHT][WIDTH], int &row_position, int &col_position, char move) {
+    
+    switch(move){
+        case 'i':
+            if(row_position==0)
+                return false;  
+            canvas[row_position][col_position] = (canvas[row_position][col_position]!='X')?'.':'x';        
+            --row_position;
+            canvas[row_position][col_position] = '#';
+            return true;
+        case 'k':
+            if(row_position==HEIGHT-1)
+                return false;
+            canvas[row_position][col_position] = (canvas[row_position][col_position]!='X')?'.':'x'; 
+            ++row_position;
+            canvas[row_position][col_position] = '#';
+            return true;       
+        case 'j':
+            if(col_position==0)
+                return false;
+            canvas[row_position][col_position] = (canvas[row_position][col_position]!='X')?'.':'x';     
+            --col_position;
+            canvas[row_position][col_position] = '#';
+            return true;       
+        case 'l':
+            if(col_position==WIDTH-1)
+                return false;
+            canvas[row_position][col_position] = (canvas[row_position][col_position]!='X')?'.':'x';
+            ++col_position;
+            canvas[row_position][col_position] = '#';
+            return true;
+    }
+    
 }
+    
+
+
 
 
 // Task 5: Print the canvas without the cursor
-void print_canvas_without_cursor(const char canvas[HEIGHT][WIDTH]) {
+void print_canvas_without_cursor(const char canvas[HEIGHT][WIDTH]) {       
+     for (int i = 0; i < HEIGHT; i++) {
+        for (int j = 0; j < WIDTH; j++) {
+            if(canvas[i][j]=='#'){
+                cout << '.';
+                continue;
+            }
+              cout << canvas[i][j] ;        
+            }
+        cout<< '\n';
+    }
 }
+
 
 
 
@@ -52,8 +106,6 @@ void print_canvas_without_cursor(const char canvas[HEIGHT][WIDTH]) {
 int main() {
     // initial canvas definition
     char canvas[HEIGHT][WIDTH];
-
-
     initialize_canvas(canvas);
 
     cout << "****************************************************************" << endl;
