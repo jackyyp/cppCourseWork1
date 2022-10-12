@@ -41,7 +41,7 @@ void paint_pixel(char canvas[HEIGHT][WIDTH], int row_position, int col_position)
 
 // Task 3: change the cursor after painting the pixel
 void erase_pixel(char canvas[HEIGHT][WIDTH], int row_position, int col_position) {
-    canvas[row_position][col_position] = '.';
+    canvas[row_position][col_position] = (canvas[row_position][col_position]!='x')?'X':'#';
 }
 
 
@@ -54,28 +54,28 @@ bool move_brush(char canvas[HEIGHT][WIDTH], int &row_position, int &col_position
                 return false;  
             canvas[row_position][col_position] = (canvas[row_position][col_position]!='X')?'.':'x';        
             --row_position;
-            canvas[row_position][col_position] = '#';
+            canvas[row_position][col_position] = (canvas[row_position][col_position]=='x')?'X':'#';
             return true;
         case 'k':
             if(row_position==HEIGHT-1)
                 return false;
             canvas[row_position][col_position] = (canvas[row_position][col_position]!='X')?'.':'x'; 
             ++row_position;
-            canvas[row_position][col_position] = '#';
+            canvas[row_position][col_position] = (canvas[row_position][col_position]=='x')?'X':'#';
             return true;       
         case 'j':
             if(col_position==0)
                 return false;
             canvas[row_position][col_position] = (canvas[row_position][col_position]!='X')?'.':'x';     
             --col_position;
-            canvas[row_position][col_position] = '#';
+            canvas[row_position][col_position] = (canvas[row_position][col_position]=='x')?'X':'#';
             return true;       
         case 'l':
             if(col_position==WIDTH-1)
                 return false;
             canvas[row_position][col_position] = (canvas[row_position][col_position]!='X')?'.':'x';
             ++col_position;
-            canvas[row_position][col_position] = '#';
+            canvas[row_position][col_position] = (canvas[row_position][col_position]=='x')?'X':'#';
             return true;
     }
     
@@ -91,6 +91,10 @@ void print_canvas_without_cursor(const char canvas[HEIGHT][WIDTH]) {
         for (int j = 0; j < WIDTH; j++) {
             if(canvas[i][j]=='#'){
                 cout << '.';
+                continue;
+            }
+            if(canvas[i][j]=='X'){
+                cout << 'x';
                 continue;
             }
               cout << canvas[i][j] ;        
