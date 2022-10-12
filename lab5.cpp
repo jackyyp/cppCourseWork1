@@ -41,7 +41,8 @@ void paint_pixel(char canvas[HEIGHT][WIDTH], int row_position, int col_position)
 
 // Task 3: change the cursor after painting the pixel
 void erase_pixel(char canvas[HEIGHT][WIDTH], int row_position, int col_position) {
-    canvas[row_position][col_position] = (canvas[row_position][col_position]!='x')?'X':'#';
+    if(canvas[row_position][col_position]=='X')
+        canvas[row_position][col_position] = '#';
 }
 
 
