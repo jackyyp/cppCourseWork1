@@ -48,16 +48,61 @@ void placeSlips(int boxes[], int num_prisoners)
 bool simulateRoom(const int boxes[], int num_prisoners, int num_trials)
 {
     /* Please replace this to your own code below */
+    // strat is to choose the box with opened number
+    int success_count = 0;
 
-    return false;
+    for(int prisoner_id = 0; prisoner_id < num_prisoners; prisoner_id++){  //prisoner id
+        int next_id = boxes[prisoner_id]; // init eg prisoner id = 2 , next id = 2
+
+        if(next_id == prisoner_id){
+            success_count++;
+            continue;
+        }
+
+        int i = 0;
+        while(i<num_trials){
+            next_id = boxes[next_id];
+            if(next_id == prisoner_id){
+                success_count++;
+                break;
+            }
+            i++;
+        }
+    }
+
+    if(success_count == num_prisoners){
+        return true;
+    }
+
+    return false;    
+    
 }
 
 // TASK 2: Display certain statistics for a given room
 void statsRoom(const int boxes[], int num_prisoners, int num_trials)
 {
     /* Here in this task, we provide some lines of code for your reference. Please write your code below and replace some of the given code */
+    int success_count = 0;
 
-    cout << "The number of prisoners who find their slips: " << "Please replace this to your own code" /* Please replace this to your own code */ << endl;
+    for(int prisoner_id = 0; prisoner_id < num_prisoners; prisoner_id++){  //prisoner id
+        int next_id = boxes[prisoner_id]; // init eg prisoner id = 2 , next id = 2
+
+        if(next_id == prisoner_id){
+            success_count++;
+            continue;
+        }
+
+        int i = 0;
+        while(i<num_trials){
+            next_id = boxes[next_id];
+            if(next_id == prisoner_id){
+                success_count++;
+                break;
+            }
+            i++;
+        }
+    }
+    cout << "The number of prisoners who find their slips: " << success_count /* Please replace this to your own code */ << endl;
     cout << "Number of loops: " << "Please replace this to your own code" /* Please replace this to your own code */ << endl;
     cout << "Smallest loop length: " << "Please replace this to your own code" /* Please replace this to your own code */ << endl;
     cout << "Longest loop length: " << "Please replace this to your own code" /* Please replace this to your own code */ << endl;
