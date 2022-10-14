@@ -83,33 +83,100 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
 {
     /* Here in this task, we provide some lines of code for your reference. Please write your code below and replace some of the given code */
     int success_count = 0;
+    int loop_count = 0;
+    int smallest_loop_length = 0; 
+    int longest_loop_length = 0;
+    int current_loop_length = 0;
+    int loop_id_list_length = 0;
+
+    const int max_loop_size = MAX_BOXES;
+    int current_loop[max_loop_size] ={1001};
+    int longest_loop[max_loop_size] = {1001};
+    int loop_id_list[max_loop_size]= {1001};
 
     for(int prisoner_id = 0; prisoner_id < num_prisoners; prisoner_id++){  //prisoner id
-        int next_id = boxes[prisoner_id]; // init eg prisoner id = 2 , next id = 2
+        bool duplicated = false; // set back to false
 
-        if(next_id == prisoner_id){
+        for(int j=0; j<loop_id_list_length;j++){ // it work starting from second iteration.
+            if(prisoner_id == loop_id_list[j]){ //if id already occur in any loop, ignore it
+                duplicated = true;
+                break; 
+            }
+        }
+        if(duplicated){
+            continue; // jump to next loop!
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+        
+        int next_id = boxes[prisoner_id]; // init eg prisoner id = 2 , next id = 4
+
+        if(next_id == prisoner_id){ // special case of size 1
             success_count++;
+            loop_count++;
+            smallest_loop_length =1;
+            loop_id_list[loop_id_list_length] = prisoner_id; // append new id to list
             continue;
         }
 
-        int i = 0;
-        while(i<num_trials){
-            next_id = boxes[next_id];
-            if(next_id == prisoner_id){
-                success_count++;
+        int i = 1;
+        while(true){ //make a unique loop
+
+            //there will be a new unique current_loop
+            current_loop[0] = prisoner_id; // loop start with prisoner id
+            current_loop[i] = next_id;//opened first box,add the next_id in loop
+            next_id = boxes[next_id]; //open the next box
+            if(next_id == prisoner_id){ // instantly stop if loop completed , aka a valid loop
+                loop_count++; // new completed loop +1
                 break;
             }
             i++;
         }
+        // now we get a loop , check if next prisoner id is in current_loop, if yes, pass.
+
+        //recalculate
+        current_loop_length = sizeof(current_loop)/sizeof(int);
+        longest_loop_length = sizeof(longest_loop)/sizeof(int);
+        loop_id_list_length = sizeof(loop_id_list)/sizeof(int);
+
+        if(smallest_loop_length == 0 ){ // initialize 
+            smallest_loop_length = current_loop_length;
+        }
+
+        if(current_loop_length>longest_loop_length){ // check if longest loop , if yes , copy it into longest_loop
+            for(int i=0;i<current_loop_length;i++){
+                longest_loop[i] = current_loop[i]; 
+            }
+        }
+
+        if(current_loop_length<smallest_loop_length){ // check if smallest loop 
+            smallest_loop_length = current_loop_length; // new smaller length
+        }
+
+        for(int i=0;i<current_loop_length;i++){
+            loop_id_list[loop_id_list_length+i] = current_loop[i]; // append all new id to list
+        }   
+
+        if(current_loop_length==num_trials){ 
+            for(int i=0;i<current_loop_length;i++){
+                success_count++; // count no. of ppl in this successed loop
+            }
+        }
     }
-    cout << "The number of prisoners who find their slips: " << success_count /* Please replace this to your own code */ << endl;
-    cout << "Number of loops: " << "Please replace this to your own code" /* Please replace this to your own code */ << endl;
-    cout << "Smallest loop length: " << "Please replace this to your own code" /* Please replace this to your own code */ << endl;
-    cout << "Longest loop length: " << "Please replace this to your own code" /* Please replace this to your own code */ << endl;
+
+    
+   
+    
+   
+
+    cout << "The number of prisoners who find their slips: " << success_count  << endl;
+    cout << "Number of loops: "  << loop_count << endl;
+    cout << "Smallest loop length: "  << smallest_loop_length << endl;
+    cout << "Longest loop length: " << longest_loop_length << endl;
     cout << "Largest loop: ";
 
-    /* Please replace this to your own code */
-
+    for(int i=0;i<longest_loop_length;i++){
+        cout<<longest_loop[i]<<' ';
+    }
     cout << endl;
 }
 
