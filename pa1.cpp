@@ -59,8 +59,8 @@ bool simulateRoom(const int boxes[], int num_prisoners, int num_trials)
             continue;
         }
 
-        int i = 0;
-        while(i<num_trials){
+        int i = 1;
+        while(i<num_trials){ 
             next_id = boxes[next_id];
             if(next_id == prisoner_id){
                 success_count++;
@@ -70,7 +70,7 @@ bool simulateRoom(const int boxes[], int num_prisoners, int num_trials)
         }
     }
 
-    if(success_count == num_prisoners){
+    if(success_count == num_prisoners){ // all gone
         return true;
     }
 
@@ -88,7 +88,7 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
     int longest_loop_length = 0;
     int current_loop_length = 0;
     int loop_id_list_length = 0;
-
+    int next_id = 0;
     
     int current_loop[MAX_BOXES];
     int longest_loop[MAX_BOXES];
@@ -103,7 +103,7 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
     for(int prisoner_id = 0; prisoner_id < num_prisoners; prisoner_id++){  //prisoner id
         bool duplicated = false; // set back to false
 
-        for(int j=0; j<loop_id_list_length;j++){ // it work starting from second iteration.
+        for(int j=0; j<MAX_BOXES;j++){ // it work starting from second iteration.
             if(prisoner_id == loop_id_list[j]){ //if id already occur in any loop, ignore it
                 duplicated = true;
                 break; 
@@ -114,45 +114,61 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
             continue; // jump to next loop
         }
         ///////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        next_id = boxes[prisoner_id]; // init eg prisoner id = 2 , next id = 4
         
-        int next_id = boxes[prisoner_id]; // init eg prisoner id = 2 , next id = 4
 
         if(next_id == prisoner_id){ // special case of size 1
             success_count++;
             loop_count++;
             smallest_loop_length =1;
-            loop_id_list[loop_id_list_length] = prisoner_id; // append new id to list
-            continue;
+            loop_id_list[loop_id_list_length] = prisoner_id; // append new id to checklist
+
+            loop_id_list_length = 0; 
+            for(int i = 0; i<MAX_BOXES; i++){   // update length
+                if(loop_id_list[i] != -1 ){
+                    loop_id_list_length++;
+                }
+            }
+            continue; // next prisoner_id
         }
         
+        for(int i = 0; i<MAX_BOXES; i++){ // reset current loop
+            current_loop[i] = -1;
+        }
 
-        int i = 1;
-        current_loop[0] = prisoner_id; // loop start with prisoner id
-        while(true){ //make a unique loop
-            //there will be a new unique current_loop
-            current_loop[i] = next_id;//opened first box,add the next_id in loop
+        int j = 1; // set back to 1
+        current_loop[0] = prisoner_id; // loop start with unique prisoner id (eg 0..2..6)
+        while(true){ //make a unique current_loop, size>1
+            current_loop[j] = next_id;//opened first box,add the next_id in loop
             next_id = boxes[next_id]; //open the next box
             if(next_id == prisoner_id){ // instantly stop if loop completed , aka a valid loop
                 loop_count++; // new completed loop +1
                 break;
             }
-            i++;
+            j++;
         }
+
+
         
 
         //recalculate
+        current_loop_length = 0; // reset
         for(int i = 0; i<MAX_BOXES; i++){    
             if(current_loop[i] != -1 ){
                 current_loop_length++;
             }
         }
-        
+
+        longest_loop_length = 0; //reset
         for(int i = 0; i<MAX_BOXES; i++){  
             if(longest_loop[i] != -1 ){
                 longest_loop_length++;
             }
         }
 
+        loop_id_list_length  = 0; //reset
         for(int i = 0; i<MAX_BOXES; i++){    
             if(loop_id_list[i] != -1 ){
                 loop_id_list_length++;
@@ -164,26 +180,56 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
             smallest_loop_length = current_loop_length;
         }
         
-        if(current_loop_length>longest_loop_length){ // check if longest loop , if yes , copy it into longest_loop
-            for(int i=0;i<current_loop_length;i++){
-                longest_loop[i] = current_loop[i]; 
+        if(current_loop_length>longest_loop_length){ // check if longest loop , if yes , copy it into longest_loop (strictly greater than)
+            for(int i=0;i<MAX_BOXES;i++){
+                if(current_loop[i] != -1){
+                    longest_loop[i] = current_loop[i]; 
+                }
             }
         }
 
-        if(current_loop_length<smallest_loop_length){ // check if smallest loop 
+        longest_loop_length = 0; //reset
+        for(int i = 0; i<MAX_BOXES; i++){  
+            if(longest_loop[i] != -1 ){
+                longest_loop_length++;
+            }
+        }
+
+        if(current_loop_length<smallest_loop_length){ // check if smaller loop 
             smallest_loop_length = current_loop_length; // new smaller length
         }
 
-        for(int i=0;i<current_loop_length;i++){
-            loop_id_list[loop_id_list_length+i] = current_loop[i]; // append all new id to list
+        for(int i=0;i<MAX_BOXES;i++){
+            if(current_loop[i] != -1){
+                loop_id_list[loop_id_list_length+i] = current_loop[i];
+            } // append all new id to list
         }   
 
-        if(current_loop_length==num_trials){ 
-            for(int i=0;i<current_loop_length;i++){
-                success_count++; // count no. of ppl in this successed loop
+        if(current_loop_length<=num_trials){  // eg l=6, [0,1,2,3,4,5] trial=5 invalid.
+            for(int i=0;i<MAX_BOXES;i++){
+                if(current_loop[i] != -1){
+                    success_count++; // count no. of ppl in this successed loop
+                }
             }
         }
+        // //**DEBUG**
+        // cout << loop_id_list_length<<endl;
+        // cout << current_loop_length<<endl;
+        // for(int i = 0; i<MAX_BOXES; i++){   // update length
+        //     if(current_loop[i] != -1 ){
+        //         cout<<current_loop[i];
+        //     }
+        // }
+        // cout<< '\n' << endl;
+        
     }
+    
+    // //**DEBUG**
+    // for(int i = 0; i<MAX_BOXES; i++){   // update length
+    //     if(loop_id_list[i] != -1 ){
+    //         cout<<loop_id_list[i];
+    //     }
+    // }
 
     
    
@@ -194,7 +240,7 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
     cout << "Number of loops: "  << loop_count << endl;
     cout << "Smallest loop length: "  << smallest_loop_length << endl;
     cout << "Longest loop length: " << longest_loop_length << endl;
-    cout << "Largest loop: ";
+    cout << "Longest loop: ";
 
     for(int i=0;i<longest_loop_length;i++){
         if(longest_loop[i] != -1){
@@ -208,17 +254,200 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
 double successRooms(int boxes[], int num_prisoners, int num_trials) //  suceess rate of 1000 rooms basically repeating it a 1000 times
 {
     /* Please replace this to your own code below */
+    double success_count = 0;
 
-    return 0;
+    for(int i=0;i<1000;i++){
+        placeSlips(boxes,num_prisoners); // replace the box
+        if(simulateRoom(boxes,num_prisoners,num_trials)){
+            success_count++;
+        }
+
+    }
+
+    return success_count;
 }
 
 // TASK 4: Nice guard will help the prisoners to successfully leave the room by breaking any loop which is greater than the number of trials
 //         Return true if the intervention was applied, else return false
+
+//**from PA1: Notice that in this task we only consider the cases that the num_trials not less than half of the num_prisoners
+// implication : it must lead to all escape. any big loop , at most 100 , become 50 50 , <= num_trial
 bool niceGuard(int boxes[], int num_prisoners, int num_trials)
 {
     /* Please replace this to your own code below */
+    if(simulateRoom(boxes,num_prisoners,num_trials)){
+        return false; // success = no intervention needed
+    }
 
-    return false;
+    //copy from task2
+    int success_count = 0;
+    int loop_count = 0;
+    int smallest_loop_length = 0; 
+    int longest_loop_length = 0;
+    int current_loop_length = 0;
+    int loop_id_list_length = 0;
+    int next_id = 0;
+    
+    int current_loop[MAX_BOXES];
+    int longest_loop[MAX_BOXES];
+    int loop_id_list[MAX_BOXES];
+
+    for(int i = 0; i<MAX_BOXES; i++){ // initizilze[ -1-1-1-1-1-...]
+         current_loop[i] = -1;
+         longest_loop[i] = -1;
+         loop_id_list[i] = -1;
+    }
+    
+    for(int prisoner_id = 0; prisoner_id < num_prisoners; prisoner_id++){  //prisoner id
+        bool duplicated = false; // set back to false
+
+        for(int j=0; j<MAX_BOXES;j++){ // it work starting from second iteration.
+            if(prisoner_id == loop_id_list[j]){ //if id already occur in any loop, ignore it
+                duplicated = true;
+                break; 
+            }
+        }
+
+        if(duplicated){
+            continue; // jump to next loop
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        next_id = boxes[prisoner_id]; // init eg prisoner id = 2 , next id = 4
+        
+
+        if(next_id == prisoner_id){ // special case of size 1
+            success_count++;
+            loop_count++;
+            smallest_loop_length =1;
+            loop_id_list[loop_id_list_length] = prisoner_id; // append new id to checklist
+
+            loop_id_list_length = 0; 
+            for(int i = 0; i<MAX_BOXES; i++){   // update length
+                if(loop_id_list[i] != -1 ){
+                    loop_id_list_length++;
+                }
+            }
+            continue; // next prisoner_id
+        }
+        
+        for(int i = 0; i<MAX_BOXES; i++){ // reset current loop
+            current_loop[i] = -1;
+        }
+
+        int j = 1; // set back to 1
+        current_loop[0] = prisoner_id; // loop start with unique prisoner id (eg 0..2..6)
+        while(true){ //make a unique current_loop, size>1
+            current_loop[j] = next_id;//opened first box,add the next_id in loop
+            next_id = boxes[next_id]; //open the next box
+            if(next_id == prisoner_id){ // instantly stop if loop completed , aka a valid loop
+                loop_count++; // new completed loop +1
+                break;
+            }
+            j++;
+        }
+
+
+        
+
+        //recalculate
+        current_loop_length = 0; // reset
+        for(int i = 0; i<MAX_BOXES; i++){    
+            if(current_loop[i] != -1 ){
+                current_loop_length++;
+            }
+        }
+
+        longest_loop_length = 0; //reset
+        for(int i = 0; i<MAX_BOXES; i++){  
+            if(longest_loop[i] != -1 ){
+                longest_loop_length++;
+            }
+        }
+
+        loop_id_list_length  = 0; //reset
+        for(int i = 0; i<MAX_BOXES; i++){    
+            if(loop_id_list[i] != -1 ){
+                loop_id_list_length++;
+            }
+        }
+
+
+        if(smallest_loop_length == 0 ){ // initialize 
+            smallest_loop_length = current_loop_length;
+        }
+        
+        if(current_loop_length>longest_loop_length){ // check if longest loop , if yes , copy it into longest_loop (strictly greater than)
+            for(int i=0;i<MAX_BOXES;i++){
+                if(current_loop[i] != -1){
+                    longest_loop[i] = current_loop[i]; 
+                }
+            }
+        }
+
+        longest_loop_length = 0; //reset
+        for(int i = 0; i<MAX_BOXES; i++){  
+            if(longest_loop[i] != -1 ){
+                longest_loop_length++;
+            }
+        }
+
+        if(current_loop_length<smallest_loop_length){ // check if smaller loop 
+            smallest_loop_length = current_loop_length; // new smaller length
+        }
+
+        for(int i=0;i<MAX_BOXES;i++){
+            if(current_loop[i] != -1){
+                loop_id_list[loop_id_list_length+i] = current_loop[i];
+            } // append all new id to list
+        }   
+
+        if(current_loop_length<=num_trials){  // eg l=6, [0,1,2,3,4,5] trial=5 invalid.
+            for(int i=0;i<MAX_BOXES;i++){
+                if(current_loop[i] != -1){
+                    success_count++; // count no. of ppl in this successed loop
+                }
+            }
+        }
+
+    } // now we get longest loop and its length
+    
+    //get last element and middle element
+    int last_element_index = 0;
+    int middle_element_index = 0;
+
+    for(int i=0;i<MAX_BOXES;i++){
+        if(longest_loop[i] == -1){ // [ 0, 1 ,2 ,3(wanted) , -1 (pos =4),-1...]
+            last_element_index = i-1;
+            break;
+        }
+    }
+
+    middle_element_index = longest_loop_length/2 + longest_loop_length%2 - 1 ; //round up eg:length 5 [0,1,2,3,4] output = 2(correct)
+    
+   
+
+    int last_box_index = 0;
+    int middle_box_index = 0;
+
+    //swap middle element and last element (break into two => worst case(even): 5 5 for 10 
+    for(int i = 0; i<MAX_BOXES; i++){
+        if(boxes[i]==longest_loop[last_element_index]){
+            last_box_index = i; // get index.
+        }
+        if(boxes[i]==longest_loop[middle_element_index]){
+            middle_box_index = i; // get another index.
+        }
+    }
+
+
+    boxes[middle_box_index] = longest_loop[last_element_index];
+    boxes[last_box_index] = longest_loop[middle_element_index];
+
+
+    return true;
+    
 }
 
 // DO NOT WRITE ANYTHING AFTER THIS LINE. ANYTHING AFTER THIS LINE WILL BE REPLACED.

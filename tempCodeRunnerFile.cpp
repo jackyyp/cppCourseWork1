@@ -1,7 +1,8 @@
 #include <iostream>
-#include <cmath>
 using namespace std;
+
 int main(){
-    cout<< int(10/3) <<endl;
+
+    cout <<  11/2 + 11%2 << endl;
     return 0;
 }
