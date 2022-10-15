@@ -89,11 +89,17 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
     int current_loop_length = 0;
     int loop_id_list_length = 0;
 
-    const int max_loop_size = MAX_BOXES;
-    int current_loop[max_loop_size] ={1001};
-    int longest_loop[max_loop_size] = {1001};
-    int loop_id_list[max_loop_size]= {1001};
+    
+    int current_loop[MAX_BOXES];
+    int longest_loop[MAX_BOXES];
+    int loop_id_list[MAX_BOXES];
 
+    for(int i = 0; i<MAX_BOXES; i++){ // initizilze[ -1-1-1-1-1-...]
+         current_loop[i] = -1;
+         longest_loop[i] = -1;
+         loop_id_list[i] = -1;
+    }
+    
     for(int prisoner_id = 0; prisoner_id < num_prisoners; prisoner_id++){  //prisoner id
         bool duplicated = false; // set back to false
 
@@ -103,8 +109,9 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
                 break; 
             }
         }
+
         if(duplicated){
-            continue; // jump to next loop!
+            continue; // jump to next loop
         }
         ///////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -117,12 +124,12 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
             loop_id_list[loop_id_list_length] = prisoner_id; // append new id to list
             continue;
         }
+        
 
         int i = 1;
+        current_loop[0] = prisoner_id; // loop start with prisoner id
         while(true){ //make a unique loop
-
             //there will be a new unique current_loop
-            current_loop[0] = prisoner_id; // loop start with prisoner id
             current_loop[i] = next_id;//opened first box,add the next_id in loop
             next_id = boxes[next_id]; //open the next box
             if(next_id == prisoner_id){ // instantly stop if loop completed , aka a valid loop
@@ -131,17 +138,32 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
             }
             i++;
         }
-        // now we get a loop , check if next prisoner id is in current_loop, if yes, pass.
+        
 
         //recalculate
-        current_loop_length = sizeof(current_loop)/sizeof(int);
-        longest_loop_length = sizeof(longest_loop)/sizeof(int);
-        loop_id_list_length = sizeof(loop_id_list)/sizeof(int);
+        for(int i = 0; i<MAX_BOXES; i++){    
+            if(current_loop[i] != -1 ){
+                current_loop_length++;
+            }
+        }
+        
+        for(int i = 0; i<MAX_BOXES; i++){  
+            if(longest_loop[i] != -1 ){
+                longest_loop_length++;
+            }
+        }
+
+        for(int i = 0; i<MAX_BOXES; i++){    
+            if(loop_id_list[i] != -1 ){
+                loop_id_list_length++;
+            }
+        }
+
 
         if(smallest_loop_length == 0 ){ // initialize 
             smallest_loop_length = current_loop_length;
         }
-
+        
         if(current_loop_length>longest_loop_length){ // check if longest loop , if yes , copy it into longest_loop
             for(int i=0;i<current_loop_length;i++){
                 longest_loop[i] = current_loop[i]; 
@@ -175,7 +197,9 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
     cout << "Largest loop: ";
 
     for(int i=0;i<longest_loop_length;i++){
-        cout<<longest_loop[i]<<' ';
+        if(longest_loop[i] != -1){
+            cout<<longest_loop[i]<<' ';
+        }
     }
     cout << endl;
 }
