@@ -240,7 +240,7 @@ void statsRoom(const int boxes[], int num_prisoners, int num_trials)
     cout << "Number of loops: "  << loop_count << endl;
     cout << "Smallest loop length: "  << smallest_loop_length << endl;
     cout << "Longest loop length: " << longest_loop_length << endl;
-    cout << "Longest loop: ";
+    cout << "Largest loop: ";
 
     for(int i=0;i<longest_loop_length;i++){
         if(longest_loop[i] != -1){
