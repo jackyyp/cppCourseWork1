@@ -1,7 +1,7 @@
 #include "stock_management.h"
+#include <iostream>
 
-const unsigned int MAX_FRUIT_NUM = 5;
-const int MAX_LENGTH = 50;
+using namespace std;
 
 // Print the name and count of each kind of fruit
 void stock_checking(const Fruit fruits[], int max_fruit_num)
@@ -9,7 +9,7 @@ void stock_checking(const Fruit fruits[], int max_fruit_num)
     //todo: print (name, total_count) pairs of each kind of fruit.
     //For example the last printed line should be watermelon: 10
     for(int i=0;i<max_fruit_num;i++){
-        for(int j=0;j<MAX_LENGTH;i++){
+        for(int j=0;j<MAX_LENGTH;j++){
             if(fruits[i].name[j]=='\0'){
                 break;
             }
@@ -26,7 +26,6 @@ void stock_updating(Fruit fruits[], int fruit_id_to_sell, int number_to_sell){
     //todo: update total_count of the sold fruit
         fruits[fruit_id_to_sell].total_count -= number_to_sell;
         fruits[fruit_id_to_sell].sold_count += number_to_sell;
-        stock_checking(fruits,MAX_FRUIT_NUM);
     return;
 }
 

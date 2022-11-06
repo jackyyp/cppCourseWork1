@@ -1,15 +1,18 @@
 
+#include "stock_management.h"
 #include <iostream>
-#include "stock_management.cpp"
 
 using namespace std;
 
+
 int main() {
+
     struct Fruit fruits[MAX_FRUIT_NUM] = {{"Apple", 5, 50, 0}, 
                                           {"Banana", 3, 30, 0},
                                           {"Strawberry", 10, 40, 0},
                                           {"Peach", 8, 30, 0},
                                           {"watermelon",30, 10, 0}};
+
     int number_of_each_fruits[MAX_FRUIT_NUM];
     unsigned int fruit_id_to_sell, number_to_sell, selling_amount;
 
