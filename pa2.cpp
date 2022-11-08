@@ -378,7 +378,59 @@ int move(int map[NUM_ROWS][NUM_COLS], int currentRow, int currentCol, int destin
 {
     /* TASK: 4.1 Move the Piece */
     /* Please write your code here: */
-    return VALID;
+    if(checkIfValid(map,currentRow,currentCol,destinationRow,destinationCol)==INVALID){
+        cout << "Please enter a valid move" << endl;
+        return INVALID;
+    }
+    int piece = map[currentRow][currentCol];
+
+    //copy above function and implement moving by modifying map value
+    if(checkIfValid(map,currentRow,currentCol,destinationRow,destinationCol)==VALID){
+        map[currentRow][currentCol] = EMPTY;
+        map[destinationRow][destinationCol] = piece;
+        if((destinationRow==0||destinationRow==NUM_ROWS-1) && piece!=RED_KING && piece!=BLACK_KING){
+            map[destinationRow][destinationCol] = piece+2; // promote to king
+        }
+        return VALID;
+    }
+
+    //Seperate handling cases for eating piece (down , up , right, left)
+
+    if(checkIfValid(map,currentRow,currentCol,destinationRow,destinationCol)==UP_CAPTURE){
+        map[currentRow][currentCol] = EMPTY;
+        map[currentRow-1][currentCol] = EMPTY; // eat
+        map[destinationRow][destinationCol] = piece;
+        if(destinationRow==0 && piece!=RED_KING && piece!=BLACK_KING){
+            map[destinationRow][destinationCol] = piece+2; // promote to king
+        }
+
+        return CAPTURE;
+    }
+
+    if(checkIfValid(map,currentRow,currentCol,destinationRow,destinationCol)==DOWN_CAPTURE){
+        map[currentRow][currentCol] = EMPTY;
+        map[currentRow+1][currentCol] = EMPTY; // eat
+        map[destinationRow][destinationCol] = piece;
+        if(destinationRow==NUM_ROWS-1 && piece!=RED_KING && piece!=BLACK_KING){
+            map[destinationRow][destinationCol] = piece+2; // promote to king
+        }
+        return CAPTURE;
+    }
+
+    if(checkIfValid(map,currentRow,currentCol,destinationRow,destinationCol)==LEFT_CAPTURE){
+        map[currentRow][currentCol] = EMPTY;
+        map[currentRow][currentCol-1] = EMPTY; // eat
+        map[destinationRow][destinationCol] = piece;
+        return CAPTURE;
+    }
+
+    if(checkIfValid(map,currentRow,currentCol,destinationRow,destinationCol)==RIGHT_CAPTURE){
+        map[currentRow][currentCol] = EMPTY;
+        map[currentRow][currentCol+1] = EMPTY; // eat
+        map[destinationRow][destinationCol] = piece;
+        return CAPTURE;
+    }
+    
 }
 
 /**
@@ -499,7 +551,27 @@ int checkEndGameConditions(const int map[NUM_ROWS][NUM_COLS])
 {
     /* TASK: 4.2 Check End Game Conditions */
     /* Please write your code here: */
+    if(countBlackPieces(map)==0){ // black is all gone
+        cout<<"RED WINS"<<endl;
+        return RED; // red wins
+    }
+
+    if(countRedPieces(map)==0){ // red is all gone
+        cout<<"BLACK WINS"<<endl;
+        return BLACK; // black wins
+    }   
+
+    // both red and black can move
+    if(countBlackPieces(map)==1&&countRedPieces(map)==1){// both have 1 left
+        if(checkIfValidMoveExistsForPlayer(map,RED)!=CAPTURE&&checkIfValidMoveExistsForPlayer(map,BLACK)!=CAPTURE){
+            cout<<"TIE"<<endl;
+            return TIE;
+        }
+    } 
+
+
     return CONTINUE;
+
 }
 
 /**
@@ -543,19 +615,117 @@ int recursive_solver(const int map[NUM_ROWS][NUM_COLS], int initialPlayer, int p
         return CONTINUE_SCORE;
     }
     //-------- DO NOT MODIFY CODE ABOVE. PUT ANY OF YOUR ANSWERS IN BETWEEN THESE TWO COMMENTS --------
-
+    // at above we return continue_score to stop recursion at round3.
     /* TASK: 4.3 Recursive Solver */
     /* Please write your code here between two comments: */
 
     // Base conditions - check if the game ends
     int end = checkEndGameConditions(map);
+    //eqv to "not continue"
+    if(end == initialPlayer){
+        if(rounds<SOLVER_ROUNDS){
+            maxScore += WIN_SCORE; // wanted player wins
+        }
+        return maxScore; // stop recursion
+    }
+    if(end == findOpponent(initialPlayer)){
+        if(rounds<SOLVER_ROUNDS){
+            maxScore -= WIN_SCORE; // lose
+        }
+        return maxScore;// stop recursion
+        
+    }
+    if(end == TIE){
+        if(rounds<SOLVER_ROUNDS){
+            maxScore += TIE_SCORE; // tie
+        }
+        return maxScore;// stop recursion
+    }
+
+
+
+
+    int map_copy[NUM_ROWS][NUM_COLS];
+    copyMap(map,map_copy); // copy an identical map to modify 
+
+    int record[4]; // store [startCol,startRow,endCol,endRow]
+      
+
+    // continue (we scan the pieces by row major order.)
+    // recursion order is important capture(down,up,right,left) -> move(down,up,right,left)
+    for(int i=0;i<NUM_ROWS;i++){
+        for(int j=0;j<NUM_COLS;j++){
+            if (map_copy[i][j] != EMPTY && map_copy[i][j] % 2 == player){ // is man or king for current player
+                if(checkIfValidMoveExistsForPlayer(map_copy, player)==CAPTURE){// exist capture for current player,and must be one of the direction.
+                    if(rounds<SOLVER_ROUNDS){//only calculate first 3 round
+                        if(player==initialPlayer){ // red captured
+                            maxScore+=CAPTURE_SCORE;
+                        }
+                        else{
+                            maxScore-=CAPTURE_SCORE; // black captured
+                        }
+                    }
+
+                    if(checkIfValid(map_copy,i,j,i+2,j)==DOWN_CAPTURE){
+                        move(map_copy,i,j,i+2,j); // perform capture and pass the map to next solver.
+                        maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); //switch player and go next round, using moved map.
+                    }
+                    if(checkIfValid(map_copy,i,j,i-2,j)==UP_CAPTURE){
+                        move(map_copy,i,j,i-2,j);
+                        maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1);
+                    }
+                    if(checkIfValid(map_copy,i,j,i,j+2)==RIGHT_CAPTURE){
+                        move(map_copy,i,j,i,j+2);
+                        maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); 
+                    }
+                    if(checkIfValid(map_copy,i,j,i,j-2)==LEFT_CAPTURE){
+                        move(map_copy,i,j,i,j-2);
+                        maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); 
+                    }                
+                }
+                
+                if(checkIfValid(map_copy,i,j,i+1,j)==VALID){ // down
+                    move(map_copy,i,j,i+1,j);
+                    maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); 
+                }
+                if(checkIfValid(map_copy,i,j,i-1,j)==VALID){// up
+                    move(map_copy,i,j,i-1,j);
+                    maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); 
+                }
+                if(checkIfValid(map_copy,i,j,i,j+1)==VALID){ // right
+                    move(map_copy,i,j,i,j+1);
+                    maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); 
+                }
+                if(checkIfValid(map_copy,i,j,i,j-1)==VALID){ // left
+                    move(map_copy,i,j,i,j-1);
+                    maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); 
+                }
+                
+            }
+            
+
+        }
+    }
+
+
+
+
+
+    
+    
+
+    
+    
+    
+
+
 
 
     //-------- DO NOT MODIFY CODE BELOW. PUT ANY OF YOUR ANSWERS IN BETWEEN THESE TWO COMMENTS --------
-    // cout << "round " << rounds << "Max Score: " << maxScore << endl;
-    // cout << "round " << rounds << " end" << endl;
-    // cout << "----------------------------------" << endl;
-    // cout << endl;
+    //  cout << "round " << rounds << "Max Score: " << maxScore << endl;
+    //  cout << "round " << rounds << " end" << endl;
+    //  cout << "----------------------------------" << endl;
+    //  cout << endl;
     if (rounds == 0)
     {
         cout << "-----------Suggession-------------" << endl;
@@ -571,7 +741,7 @@ int recursive_solver(const int map[NUM_ROWS][NUM_COLS], int initialPlayer, int p
         cout << "----------------------------------" << endl;
         cout << endl;
     }
-    return maxScore;
+    return maxScore; // stop recursion
 }
 
 /**
@@ -627,6 +797,7 @@ int main()
             {
                 break;
             };
+
             char inputMove[3];
             cout << "Enter the piece that you want to move, S to ask suggestion, or Q to quit "
                  << "(player " << (whoseTurn == RED ? "Red" : "Black") << "'s turn)" << endl;

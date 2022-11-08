@@ -1,24 +1,23 @@
-#include <iostream> 
+#include <iostream>
 using namespace std;
 
-int string2int(const char s[], int x[]){
-    int i =0;
-    while(true){
-        if(s[i]=='\0')
-            break;
-        x[i] = static_cast<int>(s[i]);
-    }
-    return i;
+
+int test(int& a , double b){
+
+    a-=2;
+    a-='0';
+    b+=3;
+
+    return a;
 }
 
-int main() 
-{
-    char string[] = "8964";
-    int container[6];
-    string2int(string,container);
-    for(int i =0;i<6;i++){
-        cout<<container[i];
-    }
-
+int main(){
+    int a =2;
+    double b = 4.2;
+    double c = test(a,b);
+    cout<<test(a,4.2)<<endl;
+    cout<<a<<endl;
+    cout<<b<<endl;
+    cout<<c<<endl;
     return 0;
 }
