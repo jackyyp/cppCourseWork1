@@ -551,12 +551,12 @@ int checkEndGameConditions(const int map[NUM_ROWS][NUM_COLS])
 {
     /* TASK: 4.2 Check End Game Conditions */
     /* Please write your code here: */
-    if(countBlackPieces(map)==0){ // black is all gone
+    if(countBlackPieces(map)==0||checkIfValidMoveExistsForPlayer(map,BLACK)==INVALID){ // black is all gone
         cout<<"RED WINS"<<endl;
         return RED; // red wins
     }
 
-    if(countRedPieces(map)==0){ // red is all gone
+    if(countRedPieces(map)==0||checkIfValidMoveExistsForPlayer(map,RED)==INVALID){ // red is all gone
         cout<<"BLACK WINS"<<endl;
         return BLACK; // black wins
     }   
@@ -582,6 +582,9 @@ int checkEndGameConditions(const int map[NUM_ROWS][NUM_COLS])
  * @param rounds the round number we are looking ahead. Round 0 is the original map. 
  * @return maxScore of its children
  */
+
+
+
 int recursive_solver(const int map[NUM_ROWS][NUM_COLS], int initialPlayer, int player, int rounds)
 {
     int maxScore = 0;
@@ -621,25 +624,23 @@ int recursive_solver(const int map[NUM_ROWS][NUM_COLS], int initialPlayer, int p
 
     // Base conditions - check if the game ends
     int end = checkEndGameConditions(map);
+
     //eqv to "not continue"
     if(end == initialPlayer){
-        if(rounds<SOLVER_ROUNDS){
-            maxScore += WIN_SCORE; // wanted player wins
-        }
-        return maxScore; // stop recursion
+        cout << "----------------------------------" << endl;
+        cout << endl;
+        return WIN_SCORE; // stop recursion
     }
     if(end == findOpponent(initialPlayer)){
-        if(rounds<SOLVER_ROUNDS){
-            maxScore -= WIN_SCORE; // lose
-        }
-        return maxScore;// stop recursion
+        cout << "----------------------------------" << endl;
+        cout << endl;
+        return -WIN_SCORE;// stop recursion
         
     }
     if(end == TIE){
-        if(rounds<SOLVER_ROUNDS){
-            maxScore += TIE_SCORE; // tie
-        }
-        return maxScore;// stop recursion
+        cout << "----------------------------------" << endl;
+        cout << endl;
+        return TIE_SCORE;// stop recursion
     }
 
 
@@ -647,78 +648,200 @@ int recursive_solver(const int map[NUM_ROWS][NUM_COLS], int initialPlayer, int p
 
     int map_copy[NUM_ROWS][NUM_COLS];
     copyMap(map,map_copy); // copy an identical map to modify 
+    int currentScore = 0; 
+    maxScore = -999; // set to lowest
 
-    int record[4]; // store [startCol,startRow,endCol,endRow]
-      
+    // check starting from bottom stack.
 
     // continue (we scan the pieces by row major order.)
     // recursion order is important capture(down,up,right,left) -> move(down,up,right,left)
     for(int i=0;i<NUM_ROWS;i++){
         for(int j=0;j<NUM_COLS;j++){
-            if (map_copy[i][j] != EMPTY && map_copy[i][j] % 2 == player){ // is man or king for current player
-                if(checkIfValidMoveExistsForPlayer(map_copy, player)==CAPTURE){// exist capture for current player,and must be one of the direction.
-                    if(rounds<SOLVER_ROUNDS){//only calculate first 3 round
-                        if(player==initialPlayer){ // red captured
-                            maxScore+=CAPTURE_SCORE;
-                        }
-                        else{
-                            maxScore-=CAPTURE_SCORE; // black captured
-                        }
+            if (map_copy[i][j] != EMPTY && map_copy[i][j] % 2 == player){// is man or king for current player
+                if(checkIfValid(map_copy,i,j,i+2,j)==DOWN_CAPTURE){  
+                    currentScore = 0; 
+                    move(map_copy,i,j,i+2,j);
+                    if(player == initialPlayer){
+                        currentScore+=CAPTURE_SCORE;
                     }
+                    else{
+                        currentScore-=CAPTURE_SCORE;
+                    }
+                    currentScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); // get MAXscore of childen node
+                    if(currentScore>maxScore){ // better sol updated
+                            maxScore=currentScore; 
+                            maxStartRow = i;
+                            maxStartCol = j;
+                            maxDistinationRow = i+2;
+                            maxDistinationCol = j;
+                    } 
+                }
 
-                    if(checkIfValid(map_copy,i,j,i+2,j)==DOWN_CAPTURE){
-                        move(map_copy,i,j,i+2,j); // perform capture and pass the map to next solver.
-                        maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); //switch player and go next round, using moved map.
-                    }
-                    if(checkIfValid(map_copy,i,j,i-2,j)==UP_CAPTURE){
-                        move(map_copy,i,j,i-2,j);
-                        maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1);
-                    }
-                    if(checkIfValid(map_copy,i,j,i,j+2)==RIGHT_CAPTURE){
-                        move(map_copy,i,j,i,j+2);
-                        maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); 
-                    }
-                    if(checkIfValid(map_copy,i,j,i,j-2)==LEFT_CAPTURE){
-                        move(map_copy,i,j,i,j-2);
-                        maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); 
-                    }                
-                }
+                copyMap(map,map_copy); // reset map.
+
                 
-                if(checkIfValid(map_copy,i,j,i+1,j)==VALID){ // down
-                    move(map_copy,i,j,i+1,j);
-                    maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); 
+
+
+                if(checkIfValid(map_copy,i,j,i-2,j)==UP_CAPTURE){
+                    currentScore = 0;                    
+                    move(map_copy,i,j,i-2,j);
+                    if(player == initialPlayer){
+                        currentScore+=CAPTURE_SCORE;
+                    }
+                    else{
+                        currentScore-=CAPTURE_SCORE;
+                    }
+                    currentScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); // previous round result
+                    if(currentScore>maxScore){ // better sol updated
+                    maxScore=currentScore;
+                    maxStartRow = i;
+                    maxStartCol = j;
+                    maxDistinationRow = i-2;
+                    maxDistinationCol = j;
                 }
-                if(checkIfValid(map_copy,i,j,i-1,j)==VALID){// up
-                    move(map_copy,i,j,i-1,j);
-                    maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); 
                 }
-                if(checkIfValid(map_copy,i,j,i,j+1)==VALID){ // right
-                    move(map_copy,i,j,i,j+1);
-                    maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); 
-                }
-                if(checkIfValid(map_copy,i,j,i,j-1)==VALID){ // left
-                    move(map_copy,i,j,i,j-1);
-                    maxScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1); 
-                }
-                
-            }
+
+                copyMap(map,map_copy);
+                    
+
+  
+                    
             
+                
+
+                if(checkIfValid(map_copy,i,j,i,j+2)==RIGHT_CAPTURE){
+                    currentScore = 0;
+                    move(map_copy,i,j,i,j+2);
+                    if(player == initialPlayer){
+                        currentScore+=CAPTURE_SCORE;
+                    }
+                    else{
+                        currentScore-=CAPTURE_SCORE;
+                    }                    
+                    currentScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1);
+                    if(currentScore>maxScore){ // better sol updated
+                            maxScore=currentScore;
+                    maxStartRow = i;
+                    maxStartCol = j;
+                    maxDistinationRow = i;
+                    maxDistinationCol = j+2;
+                }
+                }
+
+                copyMap(map,map_copy);
+                
+
+   
+
+
+                if(checkIfValid(map_copy,i,j,i,j-2)==LEFT_CAPTURE){
+                    currentScore = 0;
+                    move(map_copy,i,j,i,j-2);
+                    if(player == initialPlayer){
+                        currentScore+=CAPTURE_SCORE;
+                    }
+                    else{
+                        currentScore-=CAPTURE_SCORE;
+                    }                    
+                    currentScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1);
+                    if(currentScore>maxScore){ // better sol updated
+                            maxScore=currentScore;
+                    maxStartRow = i;
+                    maxStartCol = j;
+                    maxDistinationRow = i;
+                    maxDistinationCol = j-2;
+        
+                }                          
+                }
+
+                copyMap(map,map_copy);
+     
+
+
+
+                if(checkIfValid(map_copy,i,j,i+1,j)==VALID){
+                    currentScore = 0;
+                    move(map_copy,i,j,i+1,j);
+                    currentScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1);
+                    if(currentScore>maxScore){ // better sol updated
+                            maxScore=currentScore;
+                    maxStartRow = i;
+                    maxStartCol = j;
+                    maxDistinationRow = i+1;
+                    maxDistinationCol = j;
+                }
+                }
+
+                copyMap(map,map_copy);
+         
+                                
+
+
+                if(checkIfValid(map_copy,i,j,i-1,j)==VALID){
+                    currentScore = 0;
+                    move(map_copy,i,j,i-1,j);
+                    currentScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1);
+                    if(currentScore>maxScore){ // better sol updated
+                            maxScore=currentScore;
+                    maxStartRow = i;
+                    maxStartCol = j;
+                    maxDistinationRow = i-1;
+                    maxDistinationCol = j;
+                }    
+                }               
+
+                copyMap(map,map_copy);    
+                   
+ 
+
+
+
+                if(checkIfValid(map_copy,i,j,i,j+1)==VALID){
+                    currentScore = 0;
+                    move(map_copy,i,j,i,j+1);
+                    currentScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1);
+                    if(currentScore>maxScore){ // better sol updated
+                    maxScore=currentScore;
+                    maxStartRow = i;
+                    maxStartCol = j;
+                    maxDistinationRow = i;
+                    maxDistinationCol = j+1;
+
+                }                           
+                }
+
+                copyMap(map,map_copy);
+
+
+
+                if(checkIfValid(map_copy,i,j,i,j-1)==VALID){
+                    currentScore = 0;
+                    move(map_copy,i,j,i,j-1);
+                    currentScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1);
+                    if(currentScore>maxScore){ // better sol updated
+                    maxScore=currentScore;
+                    maxStartRow = i;
+                    maxStartCol = j;
+                    maxDistinationRow = i;
+                    maxDistinationCol = j-1;
+                }
+                }                
+
+                copyMap(map,map_copy);
+            }
 
         }
     }
 
 
-
-
-
-    
     
 
     
-    
+
     
 
 
+            
 
 
     //-------- DO NOT MODIFY CODE BELOW. PUT ANY OF YOUR ANSWERS IN BETWEEN THESE TWO COMMENTS --------
