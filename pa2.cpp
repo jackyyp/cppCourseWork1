@@ -745,13 +745,12 @@ int recursive_solver(const int map[NUM_ROWS][NUM_COLS], int initialPlayer, int p
                     }                    
                     currentScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1);
                     if(currentScore>maxScore){ // better sol updated
-                            maxScore=currentScore;
-                    maxStartRow = i;
-                    maxStartCol = j;
-                    maxDistinationRow = i;
-                    maxDistinationCol = j-2;
-        
-                }                          
+                        maxScore=currentScore;
+                        maxStartRow = i;
+                        maxStartCol = j;
+                        maxDistinationRow = i;
+                        maxDistinationCol = j-2;
+                    }                          
                 }
 
                 copyMap(map,map_copy);
@@ -764,11 +763,11 @@ int recursive_solver(const int map[NUM_ROWS][NUM_COLS], int initialPlayer, int p
                     move(map_copy,i,j,i+1,j);
                     currentScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1);
                     if(currentScore>maxScore){ // better sol updated
-                            maxScore=currentScore;
-                    maxStartRow = i;
-                    maxStartCol = j;
-                    maxDistinationRow = i+1;
-                    maxDistinationCol = j;
+                        maxScore=currentScore;
+                        maxStartRow = i;
+                        maxStartCol = j;
+                        maxDistinationRow = i+1;
+                        maxDistinationCol = j;
                 }
                 }
 
@@ -782,12 +781,12 @@ int recursive_solver(const int map[NUM_ROWS][NUM_COLS], int initialPlayer, int p
                     move(map_copy,i,j,i-1,j);
                     currentScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1);
                     if(currentScore>maxScore){ // better sol updated
-                            maxScore=currentScore;
-                    maxStartRow = i;
-                    maxStartCol = j;
-                    maxDistinationRow = i-1;
-                    maxDistinationCol = j;
-                }    
+                        maxScore=currentScore;
+                        maxStartRow = i;
+                        maxStartCol = j;
+                        maxDistinationRow = i-1;
+                        maxDistinationCol = j;
+                    }    
                 }               
 
                 copyMap(map,map_copy);    
@@ -801,13 +800,12 @@ int recursive_solver(const int map[NUM_ROWS][NUM_COLS], int initialPlayer, int p
                     move(map_copy,i,j,i,j+1);
                     currentScore+=recursive_solver(map_copy,initialPlayer,findOpponent(player),rounds+1);
                     if(currentScore>maxScore){ // better sol updated
-                    maxScore=currentScore;
-                    maxStartRow = i;
-                    maxStartCol = j;
-                    maxDistinationRow = i;
-                    maxDistinationCol = j+1;
-
-                }                           
+                        maxScore=currentScore;
+                        maxStartRow = i;
+                        maxStartCol = j;
+                        maxDistinationRow = i;
+                        maxDistinationCol = j+1;
+                    }                           
                 }
 
                 copyMap(map,map_copy);
