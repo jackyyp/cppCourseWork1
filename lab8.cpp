@@ -60,16 +60,24 @@ public:
 void FruitStore::warehousing(Fruit* fruit){
     if(all_fruits == nullptr){ // first fruit
         all_fruits = fruit;
-        all_fruits->next = nullptr;
         return;
     }
-    for(Fruit* p= all_fruits; p!=nullptr ; p = p->next){
+    for(Fruit* p= all_fruits; p!=nullptr ; p = p->next){ //method 1
         if(p->next==nullptr){
             p->next = fruit;
-            (p->next)->next = nullptr;
+
             return;
         }
     }
+    // Fruit* p = all_fruits; // method 2
+    // while(p != nullptr){
+    //     if(p->next == nullptr){
+    //         p->next = fruit;
+    //         return;
+    //     }
+    //     p = p->next;
+    // }
+
 }
 
 // Print (name, total_count) pairs of each kind of fruit.
